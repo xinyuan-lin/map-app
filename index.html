@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>南极声学数据轨迹地图</title>
+    <title>Map app</title>
     
     <!-- MapLibre GL JS -->
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@3.2.1/dist/maplibre-gl.js"></script>
@@ -16,24 +16,24 @@
     <link href="static/css/styles.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="loading" class="loading">加载声学数据中，请稍候...</div>
+    <div id="loading" class="loading">Loading data...</div>
     
     <div class="container">
         <div id="map"></div>
         
         <div class="sidebar">
-            <h2>南极声学数据可视化</h2>
+            <h2>Echo Data Visualization</h2>
             
             <div class="point-info hidden" id="pointInfo">
-                <h3>轨迹点信息</h3>
-                <p><strong>位置:</strong> <span id="pointCoords"></span></p>
-                <p><strong>时间:</strong> <span id="pointTime"></span></p>
-                <p class="time-info">数据收集于 2017-07-24 至 2017-08-03</p>
+                <h3>Track info</h3>
+                <p><strong>loc:</strong> <span id="pointCoords"></span></p>
+                <p><strong>time:</strong> <span id="pointTime"></span></p>
+                <p class="time-info">Data collected</p>
             </div>
             
             <div class="controls">
                 <div class="channel-selector">
-                    <span class="slider-label">频率通道:</span>
+                    <span class="slider-label">Channel:</span>
                     <select id="channelSelector">
                         <option value="0">GPT 18 kHz (ES18-11)</option>
                         <option value="1">GPT 38 kHz (ES38B)</option>
@@ -43,7 +43,7 @@
                 </div>
                 
                 <div class="slider-container">
-                    <span class="slider-label">Sv范围调整 (dB):</span>
+                    <span class="slider-label">Sv range (dB):</span>
                     <div class="range-slider">
                         <input type="range" id="vminSlider" min="-95" max="-50" value="-80" step="1">
                         <span class="range-value" id="vminValue">-80</span>
@@ -52,11 +52,6 @@
                         <input type="range" id="vmaxSlider" min="-50" max="-1" value="-30" step="1">
                         <span class="range-value" id="vmaxValue">-30</span>
                     </div>
-                </div>
-                
-                <div class="colormap-container">
-                    <span class="slider-label">颜色映射:</span>
-                    <div class="colormap"></div>
                 </div>
             </div>
             

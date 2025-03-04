@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-一键启动声学数据地图应用
+run map app
 """
 
 import os
@@ -12,7 +12,7 @@ import platform
 import argparse
 
 def check_dependencies():
-    """检查依赖是否已安装"""
+    """check_dependencies"""
     try:
         import flask
         import xarray
@@ -20,28 +20,26 @@ def check_dependencies():
         import netCDF4
         return True
     except ImportError as e:
-        print(f"缺少依赖项: {e}")
-        print("请先安装必要的依赖: pip install -r requirements.txt")
+        print(f"lack of dependency: {e}")
+        print("pip install -r requirements.txt")
         return False
 
 def check_data_file():
-    """检查数据文件是否存在"""
+    """check data file"""
     if not os.path.exists("concatenated_MVBS.nc"):
-        print("错误: 找不到 concatenated_MVBS.nc 文件")
-        print("请将数据文件放在当前目录并重试")
+        print("Error: cannot find concatenated_MVBS.nc")
         return False
     return True
 
 def create_folder_structure():
-    """创建必要的文件夹结构"""
+    """create_folder_structure"""
     folders = ['static', 'static/css', 'static/js']
     for folder in folders:
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
-            print(f"创建文件夹: {folder}")
+            print(f"create folder: {folder}")
 
 def open_browser(url, delay=1.5):
-    """在延迟后打开浏览器"""
     def _open_browser():
         sleep(delay)
         webbrowser.open(url)
@@ -50,26 +48,25 @@ def open_browser(url, delay=1.5):
     threading.Thread(target=_open_browser).start()
 
 def main():
-    """主函数"""
-    parser = argparse.ArgumentParser(description="启动声学数据地图应用")
-    parser.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
-    parser.add_argument("--port", type=int, default=5000, help="指定端口号")
+
+    parser = argparse.ArgumentParser(description="open map app")
+    parser.add_argument("--no-browser", action="store_true", help="No browser.")
+    parser.add_argument("--port", type=int, default=5000, help="port")
     args = parser.parse_args()
     
-    # 检查依赖和数据文件
+    # check dependencies
     if not check_dependencies() or not check_data_file():
         return 1
     
-    # 创建文件夹结构
+    # create folder
     create_folder_structure()
     
-    # 检查文件是否存在
+    # check files
     required_files = {
-        'app.py': '后端应用',
-        'data_processor.py': '数据处理模块',
-        'index.html': '主页面',
-        'static/css/styles.css': 'CSS样式表',
-        'static/js/app.js': '前端JavaScript'
+        'app.py': 'backend',
+        'index.html': 'index',
+        'static/css/styles.css': 'CSS',
+        'static/js/app.js': 'JavaScript'
     }
     
     missing_files = []
@@ -78,28 +75,27 @@ def main():
             missing_files.append(f"{file_path} ({description})")
     
     if missing_files:
-        print("错误: 缺少以下文件:")
+        print("Error: lack of file:")
         for file in missing_files:
             print(f"  - {file}")
-        print("请确保所有必要文件已正确放置")
         return 1
     
     # 启动应用
     port = args.port
     url = f"http://localhost:{port}"
     
-    print(f"启动声学数据地图应用在端口 {port}...")
-    print(f"应用将可在以下地址访问: {url}")
+    print(f"run app at port {port}...")
+    print(f"visit: {url}")
     
     if not args.no_browser:
-        print("正在打开浏览器...")
+        print("Open browser...")
         open_browser(url)
     
-    # 设置环境变量并启动Flask
+    # set environment
     os.environ["FLASK_APP"] = "app.py"
     os.environ["FLASK_ENV"] = "development"
     
-    # 启动Flask应用
+    # run Flask
     from app import app
     app.run(debug=True, host='0.0.0.0', port=port)
     

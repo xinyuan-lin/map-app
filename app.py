@@ -127,7 +127,7 @@ def get_echogram():
         return send_file(output_path, mimetype='text/html')
 
     except Exception as e:
-        app.logger.error(f"生成 echogram 时出错: {str(e)}")
+        app.logger.error(f"Wrong at Display echogram: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 
