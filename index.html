@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map app</title>
+    <title>Ship Tracking & Echogram Visualization</title>
     
     <!-- MapLibre GL JS -->
     <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@3.2.1/dist/maplibre-gl.js"></script>
@@ -12,23 +12,23 @@
     <!-- Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-2.24.3.min.js"></script>
     
-    <!-- 自定义CSS -->
+    <!-- Custom CSS -->
     <link href="static/css/styles.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="loading" class="loading">Loading data...</div>
+    <div id="loading" class="loading">Loading acoustic data...</div>
     
     <div class="container">
         <div id="map"></div>
         
         <div class="sidebar">
-            <h2>Echo Data Visualization</h2>
+            <h2>Ship Tracking & Echogram Visualization</h2>
             
             <div class="point-info hidden" id="pointInfo">
-                <h3>Track info</h3>
-                <p><strong>loc:</strong> <span id="pointCoords"></span></p>
-                <p><strong>time:</strong> <span id="pointTime"></span></p>
-                <p class="time-info">Data collected</p>
+                <h3>Track Information</h3>
+                <p><strong>Location:</strong> <span id="pointCoords"></span></p>
+                <p><strong>Time:</strong> <span id="pointTime"></span></p>
+                <p class="time-info">Click on a point in the map to view its echogram</p>
             </div>
             
             <div class="controls">
@@ -53,15 +53,24 @@
                         <span class="range-value" id="vmaxValue">-30</span>
                     </div>
                 </div>
+                
+                <div class="colormap-container">
+                    <span class="slider-label">Colormap:</span>
+                    <div class="colormap"></div>
+                </div>
             </div>
             
-            <div id="echogram"></div>
+            <div id="echogram">
+                <div class="placeholder-message">
+                    Select a point on the map to view the echogram
+                </div>
+            </div>
         </div>
     </div>
     
     <div class="tooltip" id="mapTooltip"></div>
 
-    <!-- 自定义JavaScript -->
+    <!-- Custom JavaScript -->
     <script src="static/js/app.js"></script>
 </body>
 </html>

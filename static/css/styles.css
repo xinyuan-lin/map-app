@@ -2,6 +2,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
+    color: #333;
 }
 
 .container {
@@ -17,21 +18,39 @@ body {
 .sidebar {
     width: 40%;
     height: 100%;
-    padding: 10px;
+    padding: 15px;
     box-sizing: border-box;
     overflow-y: auto;
     background-color: #f8f8f8;
     display: flex;
     flex-direction: column;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
 #echogram {
     flex: 1;
     min-height: 400px;
-    margin-bottom: 20px;
+    margin-top: 15px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    position: relative;
+}
+
+.placeholder-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #999;
+    font-style: italic;
 }
 
 .controls {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-bottom: 20px;
 }
 
@@ -41,24 +60,31 @@ body {
 
 .slider-label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: bold;
+    color: #555;
 }
 
 .range-slider {
     width: 100%;
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .range-slider input {
     flex: 1;
     margin-right: 10px;
+    cursor: pointer;
 }
 
 .range-value {
     width: 50px;
     text-align: right;
+    font-family: monospace;
+    background: #eee;
+    padding: 3px 5px;
+    border-radius: 3px;
 }
 
 .colormap-container {
@@ -73,13 +99,21 @@ body {
         #00007F, #00BF00, #007F00, #FFFF00, 
         #FF7F00, #FF00BF, #FF0000, #A6533C, #783C28);
     margin-top: 5px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .point-info {
     margin-bottom: 20px;
-    padding: 10px;
-    background-color: #e8e8e8;
+    padding: 15px;
+    background-color: #e8f4f8;
     border-radius: 5px;
+    border-left: 4px solid #0080ff;
+}
+
+.point-info h3 {
+    margin-top: 0;
+    color: #0066cc;
 }
 
 .loading {
@@ -88,12 +122,13 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.9);
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 24px;
     z-index: 1000;
+    color: #333;
 }
 
 .hidden {
@@ -106,40 +141,83 @@ body {
 
 .channel-selector select {
     width: 100%;
-    padding: 5px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
 }
 
 .time-info {
     margin-top: 10px;
     font-style: italic;
-    color: #555;
+    color: #666;
 }
 
 .tooltip {
     position: absolute;
     background-color: white;
     border: 1px solid #ddd;
-    border-radius: 3px;
+    border-radius: 4px;
     padding: 10px;
     font-size: 12px;
     pointer-events: none;
     opacity: 0;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: opacity 0.2s;
 }
 
-@media (max-width: 768px) {
+.error {
+    color: #d9534f;
+    padding: 10px;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+h2 {
+    margin-top: 0;
+    color: #0066cc;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+iframe {
+    border: none;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+}
+
+@media (max-width: 992px) {
     .container {
         flex-direction: column;
     }
     
-    #map, .sidebar {
+    #map {
+        height: 60vh;
         width: 100%;
-        height: 50vh;
     }
     
     .sidebar {
-        height: auto;
-        max-height: 50vh;
+        width: 100%;
+        height: 40vh;
+        overflow-y: auto;
+    }
+    
+    #echogram {
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 576px) {
+    .point-info, .controls {
+        padding: 10px;
+    }
+    
+    h2 {
+        font-size: 18px;
     }
 }

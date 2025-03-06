@@ -3,6 +3,7 @@ let acousticData = null;
 let trajectoryPoints = [];
 let map = null;
 let currentPointIndex = -1;
+let currentChannelIndex = 0;
 let tooltip = document.getElementById('mapTooltip');
 
 // Initialize the application
@@ -168,6 +169,24 @@ function addTrajectoryToMap() {
         });
 
         map.on('click', 'trajectory-points', handlePointClick);
+        
+        // Add hover effect
+        map.on('mouseenter', 'trajectory-points', function(e) {
+            map.getCanvas().style.cursor = 'pointer';
+            
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const time = new Date(e.features[0].properties.time).toLocaleString();
+            
+            tooltip.innerHTML = `<strong>Time:</strong> ${time}`;
+            tooltip.style.left = e.point.x + 'px';
+            tooltip.style.top = e.point.y + 'px';
+            tooltip.style.opacity = 1;
+        });
+        
+        map.on('mouseleave', 'trajectory-points', function() {
+            map.getCanvas().style.cursor = '';
+            tooltip.style.opacity = 0;
+        });
     } else {
         map.getSource('trajectory-points').setData({
             type: 'FeatureCollection',
@@ -186,69 +205,82 @@ function handlePointClick(e) {
         const feature = e.features[0];
         const pointIndex = feature.properties.index;
         const coords = feature.geometry.coordinates;
+        const timeStr = new Date(feature.properties.time).toLocaleString();
         
         currentPointIndex = pointIndex;
 
-        fetchEchogram(pointIndex, coords);
+        // Update point info display
+        document.getElementById('pointInfo').classList.remove('hidden');
+        document.getElementById('pointCoords').textContent = `${coords[1].toFixed(4)}, ${coords[0].toFixed(4)}`;
+        document.getElementById('pointTime').textContent = timeStr;
+        
+        // Fetch and display echogram
+        fetchEchogram();
     }
 }
 
-// // Fetch and Display Echogram
-// async function fetchEchogram(pointIndex, coords) {
-//     try {
-//         const response = await fetch(`/api/echogram?pointIndex=${pointIndex}&channelIndex=0`);
-//         if (!response.ok) {
-//             throw new Error(`Server responded with error: ${response.status}`);
-//         }
-        
-//         const echogramHtml = await response.text();
-        
-//         // Display in a popup
-//         new maplibregl.Popup()
-//             .setLngLat(coords)
-//             .setHTML(echogramHtml)
-//             .addTo(map);
-
-//     } catch (error) {
-//         console.error('Error fetching echogram:', error);
-//         alert('Failed to load echogram. Please try again.');
-//     }
-// }
-
-async function fetchEchogram(pointIndex, coords) {
+// Fetch and Display Echogram
+async function fetchEchogram() {
+    if (currentPointIndex < 0) return;
+    
+    const echogramDiv = document.getElementById('echogram');
+    echogramDiv.innerHTML = '<div class="loading">Loading echogram...</div>';
+    
     try {
-        const response = await fetch(`/api/echogram?pointIndex=${pointIndex}&channelIndex=0`);
-        if (!response.ok) {
-            throw new Error(`Server responded with error: ${response.status}`);
-        }
-
-        // Create an iframe to load the echogram HTML file
-        const iframe = `<iframe src="/api/echogram?pointIndex=${pointIndex}&channelIndex=0" width="600px" height="400px"></iframe>`;
-
-        // Display echogram in a popup
-        new maplibregl.Popup()
-            .setLngLat(coords)
-            .setHTML(iframe)
-            .addTo(map);
-
+        // Get current settings
+        const channelIndex = parseInt(document.getElementById('channelSelector').value);
+        const vmin = document.getElementById('vminSlider').value;
+        const vmax = document.getElementById('vmaxSlider').value;
+        
+        // Construct URL with all parameters
+        const url = `/api/echogram?pointIndex=${currentPointIndex}&channelIndex=${channelIndex}&vmin=${vmin}&vmax=${vmax}`;
+        
+        // Create iframe to display the echogram
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.style.border = 'none';
+        iframe.onload = function() {
+            // Remove loading indicator when iframe loads
+            const loadingEl = echogramDiv.querySelector('.loading');
+            if (loadingEl) loadingEl.remove();
+        };
+        
+        // Clear and add iframe
+        echogramDiv.innerHTML = '';
+        echogramDiv.appendChild(iframe);
+        
     } catch (error) {
         console.error('Error fetching echogram:', error);
-        alert('Failed to load echogram. Please try again.');
+        echogramDiv.innerHTML = '<p class="error">Failed to load echogram. Please try again.</p>';
     }
 }
-
-
 
 // Event Listeners
 function setupEventListeners() {
-    document.getElementById('vminSlider').addEventListener('input', updateEchogram);
-    document.getElementById('vmaxSlider').addEventListener('input', updateEchogram);
+    // Slider event listeners with debounce to reduce server load
+    let debounceTimer;
+    const debounceDelay = 300; // ms
+    
+    document.getElementById('vminSlider').addEventListener('input', function(e) {
+        document.getElementById('vminValue').textContent = e.target.value;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updateEchogram, debounceDelay);
+    });
+    
+    document.getElementById('vmaxSlider').addEventListener('input', function(e) {
+        document.getElementById('vmaxValue').textContent = e.target.value;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updateEchogram, debounceDelay);
+    });
+    
     document.getElementById('channelSelector').addEventListener('change', updateEchogram);
 }
 
 // Update Echogram when parameters change
 function updateEchogram() {
     if (currentPointIndex >= 0) {
-        fetchEchogram(currentPointIndex);
+        fetchEchogram();
     }
 }
