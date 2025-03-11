@@ -9,7 +9,7 @@ from datetime import datetime
 import warnings
 from custom_json import NumpyJSONEncoder, preprocess_data, safe_json_dumps
 import traceback  # To print detailed error logs
-
+import pandas as pd
 # Ignore warnings
 warnings.filterwarnings('ignore')
 
@@ -95,6 +95,10 @@ def get_echogram():
         vmin = float(request.args.get('vmin', -80))
         vmax = float(request.args.get('vmax', -30))
 
+        start_time = request.args.get('startTime', None)
+        end_time = request.args.get('endTime', None)
+
+
         ds = load_dataset()
         if ds is None:
             return jsonify({"error": "Unable to load dataset"}), 500
@@ -105,13 +109,26 @@ def get_echogram():
             return jsonify({"error": "Invalid channel index"}), 400
         channel_name = channels[channel_index]
 
-        time_points = ds.ping_time.values
-        if point_index >= len(time_points):
-            return jsonify({"error": "Invalid time index"}), 400
-        time_point = time_points[point_index]
+        if start_time and end_time:
+            try:
+                start_time = pd.to_datetime(start_time)
+                end_time = pd.to_datetime(end_time)
+                # Filter the dataset by time range
+                ds_filtered = ds.sel(ping_time=slice(start_time, end_time))
+            except Exception as e:
+                app.logger.error(f"Error filtering time range: {str(e)}")
+                return jsonify({"error": f"Invalid time range: {str(e)}"}), 400
+        else:
+            # If no time range, use the point index to get a specific time
+            time_points = ds.ping_time.values
+            if point_index >= len(time_points):
+                return jsonify({"error": "Invalid time index"}), 400
+            time_point = time_points[point_index]
+            # Create a small time window around the selected point
+            ds_filtered = ds
 
         # Generate echogram with specified parameters
-        echogram = ds.eshader.echogram(
+        echogram = ds_filtered.eshader.echogram(
             channel=[channel_name],
             cmap=[
                 "#FFFFFF", "#9F9F9F", "#5F5F5F",
@@ -123,9 +140,12 @@ def get_echogram():
             vmax=vmax,
         )
 
-        # Add title with point and channel information
-        time_str = str(time_point).split('.')[0]  # Remove microseconds
-        title = f"Echogram at {time_str} - Channel: {channel_name}"
+        # Add title with point and time range information
+        if start_time and end_time:
+            title = f"Echogram from {start_time} to {end_time} - Channel: {channel_name}"
+        else:
+            time_str = str(time_point).split('.')[0]  # Remove microseconds
+            title = f"Echogram at {time_str} - Channel: {channel_name}"
         
         # Create a Panel layout with title
         layout = pn.Column(
@@ -134,8 +154,13 @@ def get_echogram():
             echogram
         )
 
-        # Save echogram as an HTML file
-        output_path = os.path.join(OUTPUT_DIR, f"echogram_{point_index}_{channel_index}_{vmin}_{vmax}.html")
+        # Create a unique filename based on parameters
+        filename = f"echogram_{point_index}_{channel_index}_{vmin}_{vmax}"
+        if start_time and end_time:
+            # Add time range to filename
+            filename += f"_{start_time.strftime('%Y%m%d%H%M')}_{end_time.strftime('%Y%m%d%H%M')}"
+        
+        output_path = os.path.join(OUTPUT_DIR, f"{filename}.html")
         layout.save(output_path)  # Saves echogram as an interactive HTML file
 
         return send_file(output_path, mimetype='text/html')

@@ -31,6 +31,19 @@
                 <p class="time-info">Click on a point in the map to view its echogram</p>
             </div>
             
+            <div class="time-selector hidden" id="timeSelector">
+                <span class="slider-label">Time Range:</span>
+                <div class="time-range">
+                    <label for="startTime">Start:</label>
+                    <input type="datetime-local" id="startTime" name="startTime">
+                </div>
+                <div class="time-range">
+                    <label for="endTime">End:</label>
+                    <input type="datetime-local" id="endTime" name="endTime">
+                </div>
+                <button id="generateRangeEchogram" class="btn">Generate Range Echogram</button>
+            </div>
+
             <div class="controls">
                 <div class="channel-selector">
                     <span class="slider-label">Channel:</span>
