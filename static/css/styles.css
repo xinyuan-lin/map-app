@@ -263,3 +263,16 @@ iframe {
         font-size: 18px;
     }
 }
+
+.basemap-selector {
+    margin-bottom: 15px;
+}
+
+.basemap-selector select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    cursor: pointer;
+}
