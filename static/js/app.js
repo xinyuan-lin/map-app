@@ -58,6 +58,71 @@ const basemapStyles = {
     }
 };
 
+function highlightTrajectoryInRange(startTime, endTime) {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const filteredCoords = trajectoryPoints
+        .filter(p => {
+            const pointTime = new Date(p.time);
+            return pointTime >= start && pointTime <= end;
+        })
+        .map(p => [p.lng, p.lat]);
+
+    const geojson = {
+        type: 'FeatureCollection',
+        features: [{
+            type: 'Feature',
+            geometry: {
+                type: 'LineString',
+                coordinates: filteredCoords
+            }
+        }]
+    };
+
+    if (!map.getSource('highlighted-trajectory')) {
+        map.addSource('highlighted-trajectory', {
+            type: 'geojson',
+            data: geojson
+        });
+        map.addLayer({
+            id: 'highlighted-trajectory-line',
+            type: 'line',
+            source: 'highlighted-trajectory',
+            layout: {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            paint: {
+                'line-color': '#00cc44',
+                'line-width': 5,
+                'line-opacity': 0.8
+            }
+        });
+    } else {
+        map.getSource('highlighted-trajectory').setData(geojson);
+    }
+}
+
+function updateHighlightedTrajectory() {
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    
+    if (startTime && endTime) {
+        highlightTrajectoryInRange(startTime, endTime);
+    }
+}
+
+function generateRangeEchogram() {
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    if (startTime && endTime) {
+        highlightTrajectoryInRange(startTime, endTime);
+        fetchEchogram(true);
+    } else {
+        alert('Please select both start and end times');
+    }
+}
+
 function initMap() {
     map = new maplibregl.Map({
         container: 'map',
@@ -214,6 +279,14 @@ function switchBasemapStyle(styleKey) {
             map.setCenter(currentCenter);
             map.setZoom(currentZoom);
             addTrajectoryToMap();
+            
+            // Re-highlight trajectory after style change if there's a time range selected
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            if (startTime && endTime) {
+                highlightTrajectoryInRange(startTime, endTime);
+            }
+            
             console.log('✅ Style loaded, trajectory redrawn');
         }
     }, 100);
@@ -243,6 +316,9 @@ function handlePointClick(e) {
         document.getElementById('startTime').value = formatDateTimeLocal(startTime);
         document.getElementById('endTime').value = formatDateTimeLocal(endTime);
 
+        // Highlight the trajectory for the initial time range
+        updateHighlightedTrajectory();
+        
         fetchEchogram();
     }
 }
@@ -299,10 +375,6 @@ async function fetchEchogram(isTimeRange = false) {
     }
 }
 
-function generateRangeEchogram() {
-    fetchEchogram(true);
-}
-
 function setupEventListeners() {
     let debounceTimer;
     const debounceDelay = 300;
@@ -326,6 +398,10 @@ function setupEventListeners() {
 
     document.getElementById('channelSelector').addEventListener('change', updateEchogram);
     document.getElementById('generateRangeEchogram').addEventListener('click', generateRangeEchogram);
+    
+    // Add event listeners for time selectors to update highlighted trajectory
+    document.getElementById('startTime').addEventListener('change', updateHighlightedTrajectory);
+    document.getElementById('endTime').addEventListener('change', updateHighlightedTrajectory);
 }
 
 function updateEchogram() {
